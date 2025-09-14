@@ -1,15 +1,5 @@
-/**
- * @name Hotel Room Booking System
- * @author Md. Samiur Rahman (Mukul)
- * @description Hotel Room Booking and Management System Software ~ Developed By Md. Samiur Rahman (Mukul)
- * @copyright ©2023 ― Md. Samiur Rahman (Mukul). All rights reserved.
- * @version v0.0.1
- *
- */
-
 import { Empty, Result, Skeleton } from 'antd';
 import axios from 'axios';
-import getConfig from 'next/config';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Banner from '../../components/home/Banner';
@@ -17,20 +7,21 @@ import Hero from '../../components/home/Hero';
 import MainLayout from '../../components/layout';
 import RoomFilter from '../../components/rooms/RoomsFilter';
 import RoomList from '../../components/rooms/RoomsList';
+import config from "../../config";
 
-const { publicRuntimeConfig } = getConfig();
+const backend_url = config.backend_url;
 
-function Rooms(props) {
-  const [ourRooms, setOurRooms] = useState([]);
-  const [ourFilteredRooms, setOurFilteredRooms] = useState([]);
+function Rooms({ rooms, error }) {
+  const [ourRooms, setOurRooms] = useState([]); // All rooms from backend
+  const [ourFilteredRooms, setOurFilteredRooms] = useState([]); // Filtered rooms
 
-  // if props rooms exists to setOurRooms
+  // Initialize rooms once props are received
   useEffect(() => {
-    if (props?.rooms) {
-      setOurRooms(props?.rooms?.data?.rows);
-      setOurFilteredRooms(props?.rooms?.data?.rows);
+    if (rooms?.length) {
+      setOurRooms(rooms);          // All rooms
+      setOurFilteredRooms(rooms);  // Initially show all
     }
-  }, [props]);
+  }, [rooms]);
 
   return (
     <MainLayout title='Beach Resort ― Rooms'>
@@ -42,27 +33,26 @@ function Rooms(props) {
         </Banner>
       </Hero>
 
-      {/* featured rooms */}
-      <Skeleton loading={!props?.rooms && !props?.error} paragraph={{ rows: 10 }} active>
-        {props?.rooms?.data?.rows?.length === 0 ? (
-          <Empty
-            className='mt-10'
-            description={(<span>Sorry! Any data was not found.</span>)}
-          />
-        ) : props?.error ? (
+      <Skeleton loading={!rooms && !error} paragraph={{ rows: 10 }} active>
+        {error ? (
           <Result
             title='Failed to fetch'
-            subTitle={props?.error?.message || 'Sorry! Something went wrong. App server error'}
+            subTitle={error || 'Something went wrong. App server error'}
             status='error'
+          />
+        ) : ourFilteredRooms.length === 0 ? (
+          <Empty
+            className='mt-10'
+            description={<span>Sorry! No rooms were found.</span>}
           />
         ) : (
           <>
             <RoomFilter
-              ourRooms={ourRooms}
-              setOurFilteredRooms={setOurFilteredRooms}
+              ourRooms={ourRooms}                     // pass all rooms for filtering
+              setOurFilteredRooms={setOurFilteredRooms} // filtered rooms will update this
             />
             <RoomList
-              rooms={ourFilteredRooms}
+              rooms={ourFilteredRooms}               // display filtered rooms
             />
           </>
         )}
@@ -71,27 +61,25 @@ function Rooms(props) {
   );
 }
 
-export async function getServerSideProps() {
+export const getServerSideProps = async () => {
   try {
-    // Fetch data from the server-side API
-    const response = await axios.get(`${publicRuntimeConfig.API_BASE_URL}/api/v1/all-rooms-list`);
-    const rooms = response?.data?.result;
+    const response = await axios.get(`${backend_url}/all-rooms-list`);
+    const rooms = response?.data?.result?.data?.rows || []; // rooms array
 
     return {
       props: {
         rooms,
-        error: null
-      }
+        error: null,
+      },
     };
   } catch (err) {
-   return {
-     props: {
-       featuredRooms: null, // or rooms / room depending on the file
-       error: err?.response?.data?.message || err?.message || null
-     }
-   };
- }
- 
-}
+    return {
+      props: {
+        rooms: [],
+        error: err?.response?.data?.message || err?.message || 'Something went wrong',
+      },
+    };
+  }
+};
 
 export default Rooms;

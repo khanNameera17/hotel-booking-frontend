@@ -1,42 +1,29 @@
-/**
- * @name Hotel Room Booking System
- * @author Md. Samiur Rahman (Mukul)
- * @description Hotel Room Booking and Management System Software ~ Developed By Md. Samiur Rahman (Mukul)
- * @copyright ©2023 ― Md. Samiur Rahman (Mukul). All rights reserved.
- * @version v0.0.1
- *
- */
-
-import Link from 'next/link';
 import React from 'react';
+import Link from 'next/link';
 
-function Room({ room }) {
+export default function Room({ room }) {
   return (
-    <article className='room'>
-      <div className='img-container'>
+    <article className="room">
+      <div className="img-container">
         <img
-          src={room?.room_images[0]?.url || '/img/jpeg/room-1.jpeg'}
-          alt='single room'
+          src={room?.images?.[0]?.url || '/img/jpeg/room-1.jpeg'}
+          alt={room?.name || 'room'}
         />
-
-        <div className='price-top'>
-          <h6>{`$ ${room?.room_price}`}</h6>
-          <p>per night</p>
-        </div>
-
-        <Link
-          className='btn-primary room-link'
-          href={`/rooms/${room?.room_slug}`}
-        >
-          Feature
+        <div className="room-price">${room?.price}</div>
+      </div>
+      <div className="room-footer">
+        <h4>{room?.name}</h4>
+        <p>{room?.room_description || ''}</p>
+        <p>Capacity: {room?.room_capacity || 1} person(s)</p>
+        <p>Size: {room?.size || 0} m²</p>
+        <p>Type: {room?.type || 'single'}</p>
+        <p>
+          Pets Allowed: {room?.petsAllowed ? 'Yes' : 'No'} | Breakfast Included: {room?.breakfastIncluded ? 'Yes' : 'No'}
+        </p>
+        <Link href={`/rooms/${room?._id}`} className="btn-primary">
+          View Details
         </Link>
       </div>
-
-      <p className='room-info'>
-        {room?.room_name}
-      </p>
     </article>
   );
 }
-
-export default Room;
