@@ -1,11 +1,3 @@
-/**
- * @name Hotel Room Booking System
- * @author Md. Samiur Rahman (Mukul)
- * @description Hotel Room Booking and Management System Software ~ Developed By Md. Samiur Rahman (Mukul)
- * @copyright ©2023 ― Md. Samiur Rahman (Mukul). All rights reserved.
- * @version v0.0.1
- *
- */
 
 import { Empty, Result, Skeleton } from 'antd';
 import axios from 'axios';
@@ -17,8 +9,10 @@ import FeaturedRooms from '../components/home/FeaturedRooms';
 import Hero from '../components/home/Hero';
 import Services from '../components/home/Services';
 import MainLayout from '../components/layout';
+import config from "../config";
 
-const { publicRuntimeConfig } = getConfig();
+const backend_url = config.backend_url;
+// const { publicRuntimeConfig } = getConfig();
 
 function Home(props) {
   return (
@@ -33,13 +27,11 @@ function Home(props) {
           </Link>
         </Banner>
       </Hero>
-      <Services />
-
-      {/* featured rooms */}
-      <Skeleton loading={!props?.featuredRooms && !props?.error} paragraph={{ rows: 5 }} active>
-        {props?.featuredRooms?.data?.rows?.length === 0 ? (
+            {/* featured rooms */}
+            <Skeleton loading={!props?.featuredRooms && !props?.error} paragraph={{ rows: 8 }} active>
+        {props?.featuredRooms?.length === 0 ? (
           <Empty
-            className='mt-10'
+            className='mt-5'
             description={(<span>Sorry! Any data was not found.</span>)}
           />
         ) : props?.error ? (
@@ -50,35 +42,56 @@ function Home(props) {
           />
         ) : (
           <FeaturedRooms
-            featuredRoom={props?.featuredRooms?.data?.rows}
+            featuredRoom={props?.featuredRooms} 
           />
         )}
       </Skeleton>
+      <Services />
     </MainLayout>
   );
 }
 
-export async function getServerSideProps() {
-  try {
-    // Fetch data from the server-side API
-    const response = await axios.get(`${publicRuntimeConfig.API_BASE_URL}/api/v1/featured-rooms-list`);
-    const featuredRooms = response?.data?.result;
+export const getServerSideProps = async () => {
+ try {
+   const response = await axios.get(`${backend_url}/all-rooms-list`);
+   const featuredRooms = response?.data?.result?.data?.rows || [];
 
-    return {
-      props: {
-        featuredRooms,
-        error: null
-      }
-    };
-  } catch (err) {
    return {
      props: {
-       featuredRooms: null, // or rooms / room depending on the file
-       error: err?.response?.data?.message || err?.message || null
-     }
+       featuredRooms, // ✅ matches what Home expects
+       error: null,
+     },
+   };
+ } catch (err) {
+   return {
+     props: {
+       featuredRooms: [], // ✅ keep naming consistent
+       error: err?.response?.data?.message || err?.message || 'Something went wrong',
+     },
    };
  }
- 
-}
+};
 
 export default Home;
+// export async function getServerSideProps() {
+//  try {
+//    // Fetch data from the server-side API
+//    const response = await axios.get(`${publicRuntimeConfig.API_BASE_URL}/api/v1/featured-rooms-list`);
+//    const featuredRooms = response?.data?.result;
+
+//    return {
+//      props: {
+//        featuredRooms,
+//        error: null
+//      }
+//    };
+//  } catch (err) {
+//   return {
+//     props: {
+//       featuredRooms: null, // or rooms / room depending on the file
+//       error: err?.response?.data?.message || err?.message || null
+//     }
+//   };
+// }
+
+// }
