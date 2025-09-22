@@ -23,7 +23,7 @@ export default function RoomList({ rooms }) {
     </section>
    */}
     {/* Room Cards */}
-    <section className="rooms-grid">
+    {/* <section className="rooms-grid">
       {rooms.map((room) => (
         <div key={uniqueId()} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
           <div className="img-container w-full h-48 overflow-hidden">
@@ -43,7 +43,29 @@ export default function RoomList({ rooms }) {
           </div>
         </div>
       ))}
-    </section>
+    </section> */}
+
+<section className="rooms-grid">
+  {rooms.map((room) => (
+    <div key={uniqueId()} className="cards">
+      <div className="img-container">
+        <img
+          src={room?.room_images?.[0]?.url || '/img/jpeg/room-1.jpeg'}
+          alt={room.room_name}
+        />
+      </div>
+      <div className="card-body">
+        <h3>{room.room_name}</h3>
+        <p className="type">{room.room_type}</p>
+        <p className="price">₹ {room.room_price}</p>
+        <p className="details">
+          Size: {room.room_size} m² | Capacity: {room.room_capacity} person(s)
+        </p>
+      </div>
+    </div>
+  ))}
+</section>
+
   </div>
   
   );
